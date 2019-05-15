@@ -545,7 +545,7 @@ func TestHTTP_JobUpdateRegion(t *testing.T) {
 					getReq := structs.JobSpecificRequest{
 						JobID: *job.ID,
 						QueryOptions: structs.QueryOptions{
-							Region:    "north-america",
+							Region:    *tc.ExpectedRegion,
 							Namespace: structs.DefaultNamespace,
 						},
 					}
