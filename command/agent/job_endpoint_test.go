@@ -466,43 +466,42 @@ func TestHTTP_JobUpdate(t *testing.T) {
 }
 
 func TestHTTP_JobUpdateRegion(t *testing.T) {
-	cases := []struct{
-		Name string
-		ConfigRegion string
-		APIRegion string
-		ExpectedRegion *string
-		ExpectedError *string
+	cases := []struct {
+		Name           string
+		ConfigRegion   string
+		APIRegion      string
+		ExpectedRegion string
 	}{
 		{
-			Name: "api region takes precedence",
-			ConfigRegion: "not-global",
-			APIRegion: "north-america",
-			ExpectedRegion: helper.StringToPtr("north-america"),
+			Name:           "api region takes precedence",
+			ConfigRegion:   "not-global",
+			APIRegion:      "north-america",
+			ExpectedRegion: "north-america",
 		},
 		{
-			Name: "config region is set",
-			ConfigRegion: "north-america",
-			APIRegion: "",
-			ExpectedRegion: helper.StringToPtr("north-america"),
+			Name:           "config region is set",
+			ConfigRegion:   "north-america",
+			APIRegion:      "",
+			ExpectedRegion: "north-america",
 		},
 		{
-			Name: "api region is set",
-			ConfigRegion: "",
-			APIRegion: "north-america",
-			ExpectedRegion: helper.StringToPtr("north-america"),
+			Name:           "api region is set",
+			ConfigRegion:   "",
+			APIRegion:      "north-america",
+			ExpectedRegion: "north-america",
 		},
 		{
-			Name: "errors when neither region set",
-			ConfigRegion: "",
-			APIRegion: "",
+			Name:           "errors when neither region set",
+			ConfigRegion:   "",
+			APIRegion:      "",
+			ExpectedRegion: "global",
 		},
 	}
 	t.Parallel()
 
-
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
-			httpTest(t, func(c *Config) { c.Region = "north-america" }, func(s *TestAgent) {
+			httpTest(t, func(c *Config) { c.Region = tc.ExpectedRegion }, func(s *TestAgent) {
 				// Create the job
 				job := MockRegionalJob()
 
@@ -540,22 +539,19 @@ func TestHTTP_JobUpdateRegion(t *testing.T) {
 				// Check for the index
 				require.NotEmpty(t, respW.HeaderMap.Get("X-Nomad-Index"), "missing index")
 
-				if tc.ExpectedRegion != nil {
-					// Check the job is registered
-					getReq := structs.JobSpecificRequest{
-						JobID: *job.ID,
-						QueryOptions: structs.QueryOptions{
-							Region:    *tc.ExpectedRegion,
-							Namespace: structs.DefaultNamespace,
-						},
-					}
-					var getResp structs.SingleJobResponse
-					err = s.Agent.RPC("Job.GetJob", &getReq, &getResp)
-
-					require.NoError(t, err)
-					require.NotNil(t, getResp.Job, "job does not exist")
-					require.Equal(t, *tc.ExpectedRegion, getResp.Job.Region)
+				// Check the job is registered
+				getReq := structs.JobSpecificRequest{
+					JobID: *job.ID,
+					QueryOptions: structs.QueryOptions{
+						Region:    tc.ExpectedRegion,
+						Namespace: structs.DefaultNamespace,
+					},
 				}
+				var getResp structs.SingleJobResponse
+				err = s.Agent.RPC("Job.GetJob", &getReq, &getResp)
+				require.NoError(t, err)
+				require.NotNil(t, getResp.Job, "job does not exist")
+				require.Equal(t, tc.ExpectedRegion, getResp.Job.Region)
 			})
 		})
 	}
@@ -1156,7 +1152,6 @@ func TestHTTP_JobPlanRegion(t *testing.T) {
 		}
 	})
 }
-
 
 func TestHTTP_JobDispatch(t *testing.T) {
 	t.Parallel()
