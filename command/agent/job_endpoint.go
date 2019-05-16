@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"github.com/hashicorp/nomad/helper"
 	"net/http"
 	"strconv"
 	"strings"
@@ -380,15 +381,13 @@ func (s *HTTPServer) jobUpdate(resp http.ResponseWriter, req *http.Request,
 		return nil, CodedError(400, "Job ID does not match name")
 	}
 
-	// Backfill region from Job, if not present in WriteRequest
-	region := args.WriteRequest.Region
-	if region == "" {
-		region = *args.Job.Region
+	// Http region takes precedence over hcl region
+	if args.WriteRequest.Region != "" {
+		args.Job.Region = helper.StringToPtr(args.WriteRequest.Region)
 	}
-	s.logger.Error("DEBUGGGGGING", "api_region", args.WriteRequest.Region, "config_region", *args.Job.Region, "result", region)
 
+	// If no region given, region is canonicalized to 'global'
 	sJob := ApiJobToStructJob(args.Job)
-	sJob.Region = region
 
 	regReq := structs.JobRegisterRequest{
 		Job:            sJob,
@@ -396,7 +395,7 @@ func (s *HTTPServer) jobUpdate(resp http.ResponseWriter, req *http.Request,
 		JobModifyIndex: args.JobModifyIndex,
 		PolicyOverride: args.PolicyOverride,
 		WriteRequest: structs.WriteRequest{
-			Region:    region,
+			Region:    sJob.Region,
 			AuthToken: args.WriteRequest.SecretID,
 		},
 	}
