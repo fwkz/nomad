@@ -45,13 +45,11 @@ var (
 
 	// ExecutorCgroupMeasuredCpuStats is the list of CPU stats captures by the executor
 	ExecutorCgroupMeasuredCpuStats = []string{"System Mode", "User Mode", "Throttled Periods", "Throttled Time", "Percent"}
-
-	// allCaps is all linux capabilities which is used to configure libcontainer
-	allCaps []string
 )
 
-// initialize the allCaps var with all capabilities available on the system
-func init() {
+// compute linux capabilities to use for configuring libcontainer
+func computeAllCaps() []string {
+	allCaps := []string{}
 	last := capability.CAP_LAST_CAP
 	// workaround for RHEL6 which has no /proc/sys/kernel/cap_last_cap
 	if last == capability.Cap(63) {
@@ -63,6 +61,7 @@ func init() {
 		}
 		allCaps = append(allCaps, fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())))
 	}
+	return allCaps
 }
 
 // LibcontainerExecutor implements an Executor with the runc/libcontainer api
@@ -569,6 +568,7 @@ func (l *LibcontainerExecutor) handleExecWait(ch chan *waitResult, process *libc
 
 func configureCapabilities(cfg *lconfigs.Config, command *ExecCommand) error {
 	// TODO: allow better control of these
+	allCaps := computeAllCaps()
 	cfg.Capabilities = &lconfigs.Capabilities{
 		Bounding:    allCaps,
 		Permitted:   allCaps,
