@@ -30,6 +30,7 @@ IMPROVEMENTS:
  * core: Add `-verbose` flag to `nomad status` wrapper command [[GH-5516](https://github.com/hashicorp/nomad/pull/5516)]
  * core: Reduce the size of the raft transaction for plans by only sending fields updated by the plan applier [[GH-5602](https://github.com/hashicorp/nomad/pull/5602)]
  * core: Add ability to filter job deployments by most recent version of job [[GH-5702](https://github.com/hashicorp/nomad/issues/5702)]
+ * core: Add job update `auto_promote` flag, which causes deployments to promote themselves when all canaries become healthy [[GH-5719](https://github.com/hashicorp/nomad/pull/5719)]
  * client: Reduce unnecessary lost nodes on server failure [[GH-5654](https://github.com/hashicorp/nomad/issues/5654)]
  * api: Add preemption related fields to API results that return an allocation list. [[GH-5580](https://github.com/hashicorp/nomad/pull/5580)]
  * api: Add additional config options to scheduler configuration endpoint to disable preemption [[GH-5628](https://github.com/hashicorp/nomad/issues/5628)]
