@@ -466,6 +466,8 @@ func TestHTTP_JobUpdate(t *testing.T) {
 }
 
 func TestHTTP_JobUpdateRegion(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		Name           string
 		ConfigRegion   string
@@ -497,7 +499,6 @@ func TestHTTP_JobUpdateRegion(t *testing.T) {
 			ExpectedRegion: "global",
 		},
 	}
-	t.Parallel()
 
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
